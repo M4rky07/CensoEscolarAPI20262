@@ -6,4 +6,9 @@ class InstituicaoEnsino():
         self.qt_mat_bas = qt_mat_bas
 
     def toDict(self):
-        return {"id": self.id, "no_entidade": self.no_entidade, "co_entidade": self.co_entidade, "qt_mat_bas": self.qt_mat_bas}
+        return {
+            "id": self.id,
+            "no_entidade": self.no_entidade,
+            "co_entidade": self.co_entidade,
+            "qt_mat_bas": self.qt_mat_bas
+        }
