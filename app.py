@@ -1,6 +1,8 @@
 from flask import Flask, request
+
 from models.instituicaoensino import InstituicaoEnsino
 from helpers.file.json import read
+from helpers.database import get_connection
 
 
 def listar():
@@ -30,17 +32,18 @@ def health():
 
 @app.get("/instituicoesensino")
 def getAllInstituicoes():
-    insituicoesEnsino = listar()
-    print("Entrou na requisição")
-    coEntidade = request.args.get("co_entidade")
-    print(f'Valor do co_entidade do request: {coEntidade}')
-    print(f'Itens da lista de instituições:{len(insituicoesEnsino)}')
-    if coEntidade is not None:
-        insituicoesEnsinoReponse = [
-            insituicaoEnsino.toDict() for insituicaoEnsino in insituicoesEnsino if insituicaoEnsino.co_entidade == coEntidade]
-    else:
-        insituicoesEnsinoReponse = [
-            insituicaoEnsino.toDict() for insituicaoEnsino in insituicoesEnsino]
+    insituicoesEnsinoReponse = []
+    # Abrir a conexão com o banco de dados.
+    connection = get_connection()
+    cursor = connection.cursor()
+    # Executar as DML de consulta
+    cursor.execute(f'SELECT * FROM tb_instituicao_ensino')
+    dataset = cursor.fetchall()
+
+    for row in dataset:
+        print(type(row))
+    # Transformação dos dados
+    # Responder/retorna os dados ao cliente
 
     return insituicoesEnsinoReponse, 200
 
