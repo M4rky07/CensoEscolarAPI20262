@@ -1,6 +1,4 @@
 
-from datetime import datetime
-
 from marshmallow import Schema, fields, validate
 
 
@@ -23,7 +21,7 @@ class InstituicaoEnsino:
         qt_mat_eja,
         qt_mat_esp,
         id=None,
-        created=None
+        excluido=0
     ):
         self.id = id
         self.no_entidade = no_entidade
@@ -41,11 +39,7 @@ class InstituicaoEnsino:
         self.qt_mat_prof = qt_mat_prof
         self.qt_mat_eja = qt_mat_eja
         self.qt_mat_esp = qt_mat_esp
-
-        if isinstance(created, str):
-            created = datetime.fromisoformat(created)
-
-        self.created = created
+        self.excluido = excluido
 
 
 class InstituicaoEnsinoCompactoSchema(Schema):
@@ -54,10 +48,7 @@ class InstituicaoEnsinoCompactoSchema(Schema):
         validate=validate.Length(min=1, max=255)
     )
 
-    co_entidade = fields.Str(
-        required=True,
-        validate=validate.Length(min=1)
-    )
+    co_entidade = fields.Int(required=True)
 
     co_uf = fields.Int(required=True)
 
@@ -75,17 +66,14 @@ class InstituicaoEnsinoCompactoSchema(Schema):
 
 
 class InstituicaoEnsinoSchema(Schema):
-    id = fields.Str(dump_only=True)
+    id = fields.Int(dump_only=True)
 
     no_entidade = fields.Str(
         required=True,
         validate=validate.Length(min=1, max=255)
     )
 
-    co_entidade = fields.Str(
-        required=True,
-        validate=validate.Length(min=1)
-    )
+    co_entidade = fields.Int(required=True)
 
     no_uf = fields.Str(
         required=True,
@@ -145,5 +133,3 @@ class InstituicaoEnsinoSchema(Schema):
         required=True,
         validate=validate.Range(min=0)
     )
-
-    created = fields.DateTime(dump_only=True)
