@@ -4,7 +4,6 @@ from helpers.database import get_connection
 
 class InstituicaoEnsinoRepository:
 
-
     @staticmethod
     def contar():
         connection = get_connection()
@@ -13,12 +12,12 @@ class InstituicaoEnsinoRepository:
             cursor = connection.cursor()
 
             cursor.execute("""
-                SELECT COUNT(*)
+                SELECT COUNT(*) AS total
                 FROM instituicoesensino
                 WHERE excluido = 0
             """)
 
-            return cursor.fetchone()[0]
+            return cursor.fetchone()["total"]
 
         finally:
             connection.close()
@@ -38,7 +37,7 @@ class InstituicaoEnsinoRepository:
                 FROM instituicoesensino
                 WHERE excluido = 0
                 ORDER BY id ASC
-                LIMIT ? OFFSET ?
+                LIMIT %s OFFSET %s
             """, (por_pagina, offset))
 
             return [dict(row) for row in cursor.fetchall()]
@@ -59,7 +58,7 @@ class InstituicaoEnsinoRepository:
                        qt_mat_bas, qt_mat_inf, qt_mat_fund, qt_mat_med,
                        qt_mat_prof, qt_mat_eja, qt_mat_esp
                 FROM instituicoesensino
-                WHERE id = ? AND excluido = 0
+                WHERE id = %s AND excluido = 0
             """, (id,))
 
             row = cursor.fetchone()
@@ -83,7 +82,14 @@ class InstituicaoEnsinoRepository:
                     qt_mat_bas, qt_mat_inf, qt_mat_fund, qt_mat_med,
                     qt_mat_prof, qt_mat_eja, qt_mat_esp
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s, %s
+                )
+                RETURNING id, no_entidade, co_entidade, no_uf, sg_uf,
+                          co_uf, no_municipio, co_municipio, nu_ano_censo,
+                          qt_mat_bas, qt_mat_inf, qt_mat_fund, qt_mat_med,
+                          qt_mat_prof, qt_mat_eja, qt_mat_esp
             """, (
                 data["no_entidade"],
                 data["co_entidade"],
@@ -102,19 +108,11 @@ class InstituicaoEnsinoRepository:
                 data["qt_mat_esp"]
             ))
 
-            novo_id = cursor.lastrowid
+            novo_registro = dict(cursor.fetchone())
+
             connection.commit()
 
-            cursor.execute("""
-                SELECT id, no_entidade, co_entidade, no_uf, sg_uf,
-                       co_uf, no_municipio, co_municipio, nu_ano_censo,
-                       qt_mat_bas, qt_mat_inf, qt_mat_fund, qt_mat_med,
-                       qt_mat_prof, qt_mat_eja, qt_mat_esp
-                FROM instituicoesensino
-                WHERE id = ?
-            """, (novo_id,))
-
-            return dict(cursor.fetchone())
+            return novo_registro
 
         finally:
             connection.close()
@@ -128,22 +126,22 @@ class InstituicaoEnsinoRepository:
 
             cursor.execute("""
                 UPDATE instituicoesensino
-                SET no_entidade = ?,
-                    co_entidade = ?,
-                    no_uf = ?,
-                    sg_uf = ?,
-                    co_uf = ?,
-                    no_municipio = ?,
-                    co_municipio = ?,
-                    nu_ano_censo = ?,
-                    qt_mat_bas = ?,
-                    qt_mat_inf = ?,
-                    qt_mat_fund = ?,
-                    qt_mat_med = ?,
-                    qt_mat_prof = ?,
-                    qt_mat_eja = ?,
-                    qt_mat_esp = ?
-                WHERE id = ? AND excluido = 0
+                SET no_entidade = %s,
+                    co_entidade = %s,
+                    no_uf = %s,
+                    sg_uf = %s,
+                    co_uf = %s,
+                    no_municipio = %s,
+                    co_municipio = %s,
+                    nu_ano_censo = %s,
+                    qt_mat_bas = %s,
+                    qt_mat_inf = %s,
+                    qt_mat_fund = %s,
+                    qt_mat_med = %s,
+                    qt_mat_prof = %s,
+                    qt_mat_eja = %s,
+                    qt_mat_esp = %s
+                WHERE id = %s AND excluido = 0
             """, (
                 data["no_entidade"],
                 data["co_entidade"],
@@ -174,10 +172,12 @@ class InstituicaoEnsinoRepository:
                        qt_mat_bas, qt_mat_inf, qt_mat_fund, qt_mat_med,
                        qt_mat_prof, qt_mat_eja, qt_mat_esp
                 FROM instituicoesensino
-                WHERE id = ? AND excluido = 0
+                WHERE id = %s AND excluido = 0
             """, (id,))
 
-            return dict(cursor.fetchone())
+            row = cursor.fetchone()
+
+            return dict(row) if row else None
 
         finally:
             connection.close()
@@ -192,7 +192,7 @@ class InstituicaoEnsinoRepository:
             cursor.execute("""
                 UPDATE instituicoesensino
                 SET excluido = 1
-                WHERE id = ? AND excluido = 0
+                WHERE id = %s AND excluido = 0
             """, (id,))
 
             if cursor.rowcount == 0:
@@ -203,4 +203,4 @@ class InstituicaoEnsinoRepository:
             return True
 
         finally:
-            connection.close()
+            connection.close()  

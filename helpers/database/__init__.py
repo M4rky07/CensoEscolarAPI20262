@@ -1,24 +1,16 @@
 
-import sqlite3
-from pathlib import Path
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
-# Localiza a pasta raiz do projeto
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-# Caminho do banco de dados
-DATABASE = BASE_DIR / "censo_escolar.db"
+from helpers.environment import environment
 
 
 def get_connection():
-
-    if not DATABASE.exists():
-        raise FileNotFoundError(
-            f"Banco de dados não encontrado: {DATABASE}"
-        )
-
-    connection = sqlite3.connect(DATABASE)
-
-    # Permite acessar os resultados como dicionários
-    connection.row_factory = sqlite3.Row
-
-    return connection
+    return psycopg2.connect(
+        host=environment.get("DB_HOST"),
+        port=environment.get("DB_PORT"),
+        dbname=environment.get("DB_NAME"),
+        user=environment.get("DB_USER"),
+        password=environment.get("DB_PASSWORD"),
+        cursor_factory=RealDictCursor
+    )

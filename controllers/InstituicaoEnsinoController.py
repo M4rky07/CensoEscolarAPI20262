@@ -1,8 +1,7 @@
 
 from flask import Blueprint, request, jsonify
-from sqlite3 import IntegrityError
 from marshmallow import ValidationError
-
+from psycopg2 import IntegrityError
 from models.instituicaoensino import InstituicaoEnsinoSchema
 from services.InstituicaoEnsinoService import InstituicaoEnsinoService
 from helpers.logger import logger
@@ -20,7 +19,6 @@ instituicao_ensino_bp = Blueprint(
 )
 
 
-# GET - Listar instituições
 # GET - Listar instituições
 @instituicao_ensino_bp.get("/")
 def get_all_instituicoes():
