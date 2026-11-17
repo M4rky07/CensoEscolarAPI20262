@@ -1,9 +1,9 @@
 
 from flask import Blueprint, request, jsonify
-from marshmallow import ValidationError
 from psycopg2 import IntegrityError
-from models.instituicaoensino import InstituicaoEnsinoSchema
 from services.InstituicaoEnsinoService import InstituicaoEnsinoService
+from marshmallow import ValidationError
+from models.instituicaoensino import (InstituicaoEnsinoSchema,PaginacaoSchema)
 from helpers.logger import logger
 
 
@@ -24,18 +24,10 @@ instituicao_ensino_bp = Blueprint(
 def get_all_instituicoes():
 
     try:
-        pagina = request.args.get("pagina", default=1, type=int)
-        por_pagina = request.args.get("por_pagina", default=20, type=int)
+        parametros = PaginacaoSchema().load(request.args)
 
-        if pagina < 1 or por_pagina < 1:
-            return jsonify({
-                "erro": "Os parâmetros pagina e por_pagina devem ser maiores que zero"
-            }), 400
-
-        if por_pagina > 100:
-            return jsonify({
-                "erro": "O limite máximo é de 100 registros por página"
-            }), 400
+        pagina = parametros["pagina"]
+        por_pagina = parametros["por_pagina"]
 
         logger.info(
             f"Listando instituições - Página: {pagina}, "
@@ -51,13 +43,18 @@ def get_all_instituicoes():
 
         return jsonify(instituicoes), 200
 
-    except Exception as erro:
+    except ValidationError as erro:
+        return jsonify({
+            "erro": "Parâmetros inválidos",
+            "campos": erro.messages
+        }), 400
+
+    except Exception:
         logger.exception("Erro ao listar instituições")
 
         return jsonify({
             "erro": "Erro interno ao listar instituições"
         }), 500
-
 
 # GET - Buscar instituição por ID
 @instituicao_ensino_bp.get("/<int:id>")

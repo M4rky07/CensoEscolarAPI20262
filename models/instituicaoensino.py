@@ -133,3 +133,18 @@ class InstituicaoEnsinoSchema(Schema):
         required=True,
         validate=validate.Range(min=0)
     )
+
+class PaginacaoSchema(Schema):
+    
+    pagina = fields.Int(
+        load_default=1,
+        validate=validate.Range(min=1)
+    )
+
+    por_pagina = fields.Int(
+        load_default=20,
+        validate=validate.Range(min=1, max=25)
+    )
+
+
+    
